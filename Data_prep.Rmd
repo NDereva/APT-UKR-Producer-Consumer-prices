@@ -26,6 +26,7 @@ d %>% head()
 Some transformation is required
 
 ```{r}
+
 d <- d %>%
   pivot_longer(cols = January:December,
                names_to = "Month",
@@ -77,5 +78,6 @@ ggsave("Prices.pdf", width = 20, height = 20, units = "cm", path = "plots/")
 save data
 ```{r}
 saveRDS(d, "data/clean_data.RDS")
+
 ```
 
