@@ -1,0 +1,81 @@
+---
+title: "Data prep"
+author: "Mykola Dereva"
+date: "7/29/2021"
+output: html_document
+---
+
+```{r}
+rm(list = ls())
+library(tidyverse)
+library(here)
+library(lubridate)
+```
+
+Load data
+```{r}
+d <- readxl::read_excel(
+  here("Data", "Aggregated.xlsx")
+)
+```
+
+```{r}
+d %>% head()
+```
+
+Some transformation is required
+
+```{r}
+d <- d %>%
+  pivot_longer(cols = January:December,
+               names_to = "Month",
+               values_to = "Price"
+               )
+
+d
+```
+
+
+Since the producer prices are prices for tonne, while consumers - for kg. 
+We need to unify this. 
+
+```{r}
+d <- d %>% 
+  pivot_wider(names_from = Type,
+              values_from = Price) %>% 
+  mutate(Producer = Producer / 1000) %>%   # to have price for kg
+  pivot_longer(Producer:Consumer,
+               names_to = "Type",
+               values_to = "Price")
+
+d
+```
+
+Also we need to make a proper time series column
+```{r}
+d <- d %>% 
+  mutate(Date = ym(str_c(Year, Month)))
+
+d
+```
+
+Lets plot the prices
+```{r}
+d %>% 
+  ggplot(aes(Date, Price, col = Type)) +
+  geom_line() +
+  facet_wrap(~ Product, ncol = 2, scales = "free_y") +
+  theme_minimal() +
+  theme(legend.position = "bottom")
+```
+```{r}
+
+ggsave("Prices.pdf", width = 20, height = 20, units = "cm", path = "plots/")
+```
+
+
+save data
+```{r}
+saveRDS(d, "data/clean_data.RDS")
+```
+
