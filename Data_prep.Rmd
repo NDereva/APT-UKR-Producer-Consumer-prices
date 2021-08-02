@@ -1,0 +1,30 @@
+---
+title: "Data prep"
+author: "Mykola Dereva"
+date: "7/29/2021"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+library(here)
+```
+
+Load data
+```{r}
+d <- readxl::read_excel(
+  here("Data", "Aggregated.xlsx")
+)
+```
+
+```{r}
+d %>% head()
+```
+
+Some transformation is required
+
+```{r}
+d %>%
+  pivot_longer()
+```
+
