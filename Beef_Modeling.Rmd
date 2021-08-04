@@ -1,0 +1,394 @@
+---
+title: "Beef Modeling"
+author: "Mykola Dereva"
+date: "8/2/2021"
+output: html_document
+---
+
+
+
+```{r}
+rm(list = ls())
+```
+
+```{r}
+d <- readRDS("data/clean_data.rds")
+```
+
+
+# Modeling 
+
+```{r message=FALSE}
+library(apt)
+library(urca)
+library(dplyr)
+```
+There is a conflict with the dplyr lag() so I have to change it to the default 
+function, so the apt package works properly 
+
+```{r}
+lag <- stats::lag
+```
+
+
+
+```{r}
+product <- "Beef"
+
+cons <- x <- d %>% 
+  filter(Type == "Consumer",
+         Product == product) %>% 
+  select(Price) %>% 
+  log() %>% 
+  ts(start = c(2013, 1), frequency = 12)
+  
+prod <- y <- d %>% 
+  filter(Type == "Producer",
+         Product == product) %>% 
+  select(Price) %>% 
+  log() %>% 
+  ts(start = c(2013, 1), frequency = 12)
+
+x.name <- "Consumer"
+y.name <- "Producer"
+```
+
+```{r}
+par(mfrow=c(2,1))
+plot(x)
+plot(y)
+```
+
+### cointegration Tests
+
+```{r}
+ca.jo(x = cbind(x,y),
+      type = "eigen",
+      ecdet = "none",
+      K = 2)
+```
+
+
+
+
+### EG contegration
+
+
+```{r}
+LR <- lm(y ~ x)
+summary(LR)
+```
+
+
+residuals
+```{r}
+ry <- ts(residuals(LR), start=start(x), end=end(x), frequency = 12)
+plot(ry)
+```
+
+
+```{r}
+eg <- ur.df(ry, type = c("none"), lags=1)
+summary(eg)
+```
+
+we are primarily interested in the residuals from this equation, which would suggest that the variables are cointegrated if the residuals are stationary.
+
+
+
+```{r}
+plot(eg)
+```
+
+Autocorrelation of residuals 
+
+```{r}
+eg4 <- Box.test(eg@res, lag = 4, type = "Ljung")
+eg8 <- Box.test(eg@res, lag = 8, type="Ljung")
+eg12 <- Box.test(eg@res, lag = 12, type="Ljung")
+
+```
+
+```{r}
+eg4; eg8; eg12
+```
+
+
+# TAR + Cointegration
+
+
+### TAR
+
+```{r}
+t3 <- ciTarThd(y=y, x=x, model="tar", lag=0)
+```
+
+```{r}
+(th.tar <- t3$basic)
+```
+
+```{r}
+plot(t3)
+```
+
+
+
+Choose threshold
+
+```{r}
+for (i in 1:12) { # 20 seconds
+  t3a <- ciTarThd(y=y, x=x, model="tar", lag=i)
+  th.tar[i+2] <- t3a$basic[,2]
+}
+```
+
+
+
+```{r}
+th.tar
+```
+
+
+### MTAR treshold
+
+```{r}
+t4 <- ciTarThd(y=y, x=x, model="mtar", lag=0)
+(th.mtar <- t4$basic)
+```
+
+
+
+```{r}
+plot(t4)
+```
+
+
+```{r}
+for (i in 1:12) {
+  t4a <- ciTarThd(y=y, x=x, model="mtar", lag=i)
+  th.mtar[i+2] <- t4a$basic[,2]
+}
+th.mtar
+```
+
+
+
+The following threshold values are specific to this data. They HAVE TO be
+revised for another data set. Otherwise, various errors will occur.
+
+```{r}
+(t.tar <- th.tar$V3[2])    #Best threshold for tar
+(t.mtar <- th.mtar$V3[2])
+```
+
+
+## Lag selection 
+
+```{r}
+# max lag 
+mx <- 12
+```
+
+
+
+### tar, thresold 0
+```{r}
+g1 <- ciTarLag(y=y, x=x, model="tar", maxlag=mx, thresh = 0)
+g1
+```
+#### MTAR, threshlod 0
+```{r}
+(g2 <-ciTarLag(y=y, x=x, model="mtar",maxlag=mx, thresh=0))
+```
+
+
+```{r}
+plot(g1)
+```
+
+
+```{r}
+plot(g2)
+```
+
+
+
+
+```{r}
+(g3 <-ciTarLag(y=y, x=x, model="tar", maxlag=mx, thresh=t.tar))
+
+```
+
+
+```{r}
+(g4 <-ciTarLag(y=y, x=x, model="mtar",maxlag=mx, thresh=t.mtar))
+
+```
+
+
+# Table 3 Results of EG and threshold cointegration tests
+
+Choose Lag
+```{r}
+vv <- 0
+```
+
+```{r}
+(f1 <- ciTarFit(y=y, x=x, model="tar", lag=vv, thresh=0 ))
+```
+
+
+```{r}
+(f2 <- ciTarFit(y=y, x=x, model="tar", lag=vv, thresh=t.tar ))
+```
+
+
+
+```{r}
+(f3 <- ciTarFit(y=y, x=x, model="mtar", lag=vv, thresh=0 ))
+```
+
+
+```{r}
+(f4 <- ciTarFit(y=y, x=x, model="mtar", lag=vv, thresh=t.mtar))
+```
+
+
+#### summary table
+
+```{r}
+r0 <- cbind(summary(f1)$dia, summary(f2)$dia,
+            summary(f3)$dia, summary(f4)$dia)
+
+diag <- r0[c(1:4, 6:7, 12:14, 8, 10, 9, 11), c(1,2,4,6,8)]
+
+rownames(diag) <- 1:nrow(diag)
+diag
+```
+
+
+
+```{r}
+e1 <- summary(f1)$out
+e2 <- summary(f2)$out
+e3 <- summary(f3)$out
+e4 <- summary(f4)$out
+
+```
+
+
+```{r}
+ee <- list(e1, e2, e3, e4)
+vect <- NULL
+
+
+for (i in 1:4) {
+  ef <- data.frame(ee[i])
+  vect2 <- c(paste(ef[3, "estimate"], ef[3, "sign"], sep=""),
+  paste("(", ef[3, "t.value"], ")", sep=""),
+  paste(ef[4, "estimate"], ef[4, "sign"], sep=""),
+  paste("(", ef[4, "t.value"], ")", sep=""))
+  vect <- cbind(vect, vect2)
+}
+
+```
+
+
+```{r}
+item <- c("pos.coeff","pos.t.value", "neg.coeff","neg.t.value")
+ve <- data.frame(cbind(item, vect))
+colnames(ve) <- colnames(diag)
+( res.CI <- rbind(diag, ve)[c(1:2, 14:17, 3:13), ] )
+rownames(res.CI) <- 1:nrow(res.CI)
+
+res.CI
+```
+
+
+```{r}
+library(xtable)
+```
+
+### save summary table
+```{r}
+table <- xtable(res.CI)
+print(table, type = "html",
+      file = paste("tables/", product, ".doc", sep = ""))
+```
+
+
+
+
+
+# APT + ECM
+
+```{r}
+(sem <- ecmSymFit(y=prod, x=cons, lag=4))  # why lag 4?
+```
+
+
+
+
+
+```{r}
+aem <- ecmAsyFit(y=prod, x=cons, lag=4, model="mtar", split=TRUE, thresh=t.mtar)
+aem
+```
+
+
+```{r}
+ccc <- summary(aem)
+
+coe <- cbind(as.character(ccc[1:19, 2]),
+    paste(ccc[1:19, "estimate"], ccc$signif[1:19], sep=""), ccc[1:19, "t.value"],
+    paste(ccc[20:38,"estimate"], ccc$signif[20:38],sep=""), ccc[20:38,"t.value"])
+
+colnames(coe) <- c("item",
+                   paste(x.name, ".est", sep = ""),
+                   paste(x.name, ".t", sep = ""),
+                   paste(y.name, ".est", sep = ""),
+                   paste(y.name, ".t", sep = "")
+                   )
+
+coe
+```
+
+
+```{r}
+edia <- ecmDiag(aem, 3)
+ed <- edia[c(1,6,7,8,9), ]
+ed2 <- cbind(ed[,1:2], "_", ed[,3], "_")
+colnames(ed2) <- colnames(coe)
+ed2
+```
+
+
+```{r}
+tes <- ecmAsyTest(aem)$out
+tes2 <- tes[c(2,3,5,11,12,13,1), -1]
+
+tes3 <- cbind(as.character(tes2[,1]),
+    paste(tes2[,2], tes2[,6], sep=''), paste("[", round(tes2[,4],2), "]", sep=''),
+    paste(tes2[,3], tes2[,7], sep=''), paste("[", round(tes2[,5],2), "]", sep=''))
+colnames(tes3) <- colnames(coe)
+```
+
+```{r}
+coe <- data.frame(apply(coe, 2, as.character), stringsAsFactors=FALSE)
+ed2 <- data.frame(apply(ed2, 2, as.character), stringsAsFactors=FALSE)
+tes3 <- data.frame(apply(tes3,2, as.character), stringsAsFactors=FALSE)
+```
+
+```{r}
+table.2 <- data.frame(rbind(coe, ed2, tes3))
+
+table.2
+```
+
+```{r}
+table.2 <- xtable(table.2)
+
+print(table.2, type = "html",
+      file = paste("tables/", product, "_ECM.doc", sep = ""))
+```
+
