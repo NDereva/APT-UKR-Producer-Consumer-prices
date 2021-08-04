@@ -1,11 +1,9 @@
 ---
-title: "Beef Modeling"
+title: "Sunflower_oil_modeling"
 author: "Mykola Dereva"
-date: "8/2/2021"
+date: "8/4/2021"
 output: html_document
 ---
-
-
 
 ```{r}
 rm(list = ls())
@@ -33,7 +31,7 @@ lag <- stats::lag
 
 
 ```{r}
-product <- "Beef"
+product <- "Sunflower oil"
 
 cons <- x <- d %>% 
   filter(Type == "Consumer",
@@ -55,8 +53,8 @@ y.name <- "Producer"
 
 ```{r}
 par(mfrow=c(2,1))
-plot(x)
-plot(y)
+plot(x, main = x.name)
+plot(y, main = y.name)
 ```
 
 
@@ -224,7 +222,7 @@ vv <- 0
 ```
 
 ```{r}
-(f1 <- ciTarFit(y=y, x=x, model="tar", lag=vv, thresh=0 ))
+(f1 <- ciTarFit(y=y, x=x, model="tar", lag=0, thresh=0 ))
 ```
 
 
@@ -235,12 +233,12 @@ vv <- 0
 
 
 ```{r}
-(f3 <- ciTarFit(y=y, x=x, model="mtar", lag=vv, thresh=0 ))
+(f3 <- ciTarFit(y=y, x=x, model="mtar", lag=2, thresh=0 ))
 ```
 
 
 ```{r}
-(f4 <- ciTarFit(y=y, x=x, model="mtar", lag=vv, thresh=t.mtar))
+(f4 <- ciTarFit(y=y, x=x, model="mtar", lag=2, thresh=t.mtar))
 ```
 
 

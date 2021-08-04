@@ -1,10 +1,9 @@
 ---
-title: "Beef Modeling"
+title: "Buckwheat_modeling"
 author: "Mykola Dereva"
-date: "8/2/2021"
+date: "8/4/2021"
 output: html_document
 ---
-
 
 
 ```{r}
@@ -33,7 +32,7 @@ lag <- stats::lag
 
 
 ```{r}
-product <- "Beef"
+product <- "Buckwheat"
 
 cons <- x <- d %>% 
   filter(Type == "Consumer",
@@ -55,8 +54,8 @@ y.name <- "Producer"
 
 ```{r}
 par(mfrow=c(2,1))
-plot(x)
-plot(y)
+plot(x, main = x.name)
+plot(y, main = y.name)
 ```
 
 
@@ -229,18 +228,18 @@ vv <- 0
 
 
 ```{r}
-(f2 <- ciTarFit(y=y, x=x, model="tar", lag=vv, thresh=t.tar ))
+(f2 <- ciTarFit(y=y, x=x, model="tar", lag=0, thresh=t.tar ))
 ```
 
 
 
 ```{r}
-(f3 <- ciTarFit(y=y, x=x, model="mtar", lag=vv, thresh=0 ))
+(f3 <- ciTarFit(y=y, x=x, model="mtar", lag=2, thresh=0 ))
 ```
 
 
 ```{r}
-(f4 <- ciTarFit(y=y, x=x, model="mtar", lag=vv, thresh=t.mtar))
+(f4 <- ciTarFit(y=y, x=x, model="mtar", lag=2, thresh=t.mtar))
 ```
 
 

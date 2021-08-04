@@ -1,0 +1,98 @@
+---
+title: "Milk_modeling"
+author: "Mykola Dereva"
+date: "8/4/2021"
+output: html_document
+---
+
+
+
+```{r}
+rm(list = ls())
+```
+
+```{r}
+d <- readRDS("data/clean_data.rds")
+```
+
+
+# Modeling 
+
+```{r message=FALSE}
+library(apt)
+library(urca)
+library(dplyr)
+```
+
+
+
+
+There is a conflict with the dplyr lag() so I have to change it to the default 
+function, so the apt package works properly 
+
+```{r}
+lag <- stats::lag
+```
+
+
+
+```{r}
+product <- "Milk"
+
+cons <- x <- d %>% 
+  filter(Type == "Consumer",
+         Product == product) %>% 
+  select(Price) %>% 
+  log() %>% 
+  ts(start = c(2013, 1), frequency = 12)
+  
+prod <- y <- d %>% 
+  filter(Type == "Producer",
+         Product == product) %>% 
+  select(Price) %>% 
+  log() %>% 
+  ts(start = c(2013, 1), frequency = 12)
+
+x.name <- "Consumer"
+y.name <- "Producer"
+```
+
+```{r}
+par(mfrow=c(2,1))
+plot(x)
+plot(y)
+```
+
+
+
+
+
+
+
+### EG contegration
+
+
+```{r}
+LR <- lm(y ~ x)
+summary(LR)
+```
+
+
+
+residuals
+```{r}
+ry <- ts(residuals(LR), start=start(x), end=end(x), frequency = 12)
+plot(ry)
+```
+
+
+
+```{r}
+eg <- ur.df(ry, type = c("none"), lags=1)
+summary(eg)
+```
+Time series seems to be not cointegrated
+So we cannot analyse it for APT
+
+
+

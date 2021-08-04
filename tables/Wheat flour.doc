@@ -1,0 +1,22 @@
+<!-- html table generated in R 4.1.0 by xtable 1.8-4 package -->
+<!-- Wed Aug 04 13:36:38 2021 -->
+<table border=1>
+<tr> <th>  </th> <th> item </th> <th> tar </th> <th> c.tar </th> <th> mtar </th> <th> c.mtar </th>  </tr>
+  <tr> <td align="right"> 1 </td> <td> lag </td> <td> 0 </td> <td> 0 </td> <td> 0 </td> <td> 0 </td> </tr>
+  <tr> <td align="right"> 2 </td> <td> thresh </td> <td> 0 </td> <td> 0.046 </td> <td> 0 </td> <td> 0.01 </td> </tr>
+  <tr> <td align="right"> 3 </td> <td> pos.coeff </td> <td> -0.059  </td> <td> -0.044  </td> <td> -0.074. </td> <td> -0.073  </td> </tr>
+  <tr> <td align="right"> 4 </td> <td> pos.t.value </td> <td> (-0.748) </td> <td> (-0.545) </td> <td> (-1.467) </td> <td> (-1.367) </td> </tr>
+  <tr> <td align="right"> 5 </td> <td> neg.coeff </td> <td> -0.088* </td> <td> -0.094* </td> <td> -0.096  </td> <td> -0.093  </td> </tr>
+  <tr> <td align="right"> 6 </td> <td> neg.t.value </td> <td> (-1.776) </td> <td> (-1.902) </td> <td> (-1.227) </td> <td> (-1.335) </td> </tr>
+  <tr> <td align="right"> 7 </td> <td> total obs </td> <td> 96 </td> <td> 96 </td> <td> 96 </td> <td> 96 </td> </tr>
+  <tr> <td align="right"> 8 </td> <td> coint obs </td> <td> 95 </td> <td> 95 </td> <td> 94 </td> <td> 94 </td> </tr>
+  <tr> <td align="right"> 9 </td> <td> aic </td> <td> -322.517 </td> <td> -322.715 </td> <td> -318.05 </td> <td> -318.044 </td> </tr>
+  <tr> <td align="right"> 10 </td> <td> bic </td> <td> -314.856 </td> <td> -315.054 </td> <td> -310.42 </td> <td> -310.414 </td> </tr>
+  <tr> <td align="right"> 11 </td> <td> LB test(4) </td> <td> 0.987 </td> <td> 0.986 </td> <td> 0.978 </td> <td> 0.979 </td> </tr>
+  <tr> <td align="right"> 12 </td> <td> LB test(8) </td> <td> 1 </td> <td> 1 </td> <td> 0.999 </td> <td> 0.999 </td> </tr>
+  <tr> <td align="right"> 13 </td> <td> LB test(12) </td> <td> 1 </td> <td> 1 </td> <td> 1 </td> <td> 1 </td> </tr>
+  <tr> <td align="right"> 14 </td> <td> H1: no CI </td> <td> 1.857 </td> <td> 1.958 </td> <td> 1.829 </td> <td> 1.826 </td> </tr>
+  <tr> <td align="right"> 15 </td> <td> H1: p.value </td> <td> 0.162 </td> <td> 0.147 </td> <td> 0.166 </td> <td> 0.167 </td> </tr>
+  <tr> <td align="right"> 16 </td> <td> H2: no APT </td> <td> 0.097 </td> <td> 0.291 </td> <td> 0.054 </td> <td> 0.048 </td> </tr>
+  <tr> <td align="right"> 17 </td> <td> H2: p.value </td> <td> 0.756 </td> <td> 0.591 </td> <td> 0.817 </td> <td> 0.827 </td> </tr>
+   </table>

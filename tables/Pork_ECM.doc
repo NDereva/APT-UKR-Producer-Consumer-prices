@@ -1,0 +1,36 @@
+<!-- html table generated in R 4.1.0 by xtable 1.8-4 package -->
+<!-- Wed Aug 04 13:20:27 2021 -->
+<table border=1>
+<tr> <th>  </th> <th> item </th> <th> Consumer.est </th> <th> Consumer.t </th> <th> Producer.est </th> <th> Producer.t </th>  </tr>
+  <tr> <td align="right"> 1 </td> <td> (Intercept) </td> <td> 0.003  </td> <td> 0.393 </td> <td> 0.008  </td> <td> 0.593 </td> </tr>
+  <tr> <td align="right"> 2 </td> <td> X.diff.cons.t_1.pos </td> <td> 0.123  </td> <td> 0.381 </td> <td> -0.058  </td> <td> -0.096 </td> </tr>
+  <tr> <td align="right"> 3 </td> <td> X.diff.cons.t_2.pos </td> <td> 0.302  </td> <td> 0.965 </td> <td> 0.387  </td> <td> 0.665 </td> </tr>
+  <tr> <td align="right"> 4 </td> <td> X.diff.cons.t_3.pos </td> <td> -0.093  </td> <td> -0.321 </td> <td> -0.24  </td> <td> -0.448 </td> </tr>
+  <tr> <td align="right"> 5 </td> <td> X.diff.cons.t_4.pos </td> <td> -0.231  </td> <td> -1.109 </td> <td> -0.055  </td> <td> -0.142 </td> </tr>
+  <tr> <td align="right"> 6 </td> <td> X.diff.cons.t_1.neg </td> <td> -0.631. </td> <td> -1.526 </td> <td> -1.359* </td> <td> -1.772 </td> </tr>
+  <tr> <td align="right"> 7 </td> <td> X.diff.cons.t_2.neg </td> <td> -0.239  </td> <td> -0.582 </td> <td> -0.398  </td> <td> -0.522 </td> </tr>
+  <tr> <td align="right"> 8 </td> <td> X.diff.cons.t_3.neg </td> <td> 0.911** </td> <td> 2.301 </td> <td> 1.412* </td> <td> 1.922 </td> </tr>
+  <tr> <td align="right"> 9 </td> <td> X.diff.cons.t_4.neg </td> <td> 0.21  </td> <td> 0.599 </td> <td> 0.083  </td> <td> 0.127 </td> </tr>
+  <tr> <td align="right"> 10 </td> <td> X.diff.prod.t_1.pos </td> <td> 0.293  </td> <td> 1.065 </td> <td> 0.419  </td> <td> 0.821 </td> </tr>
+  <tr> <td align="right"> 11 </td> <td> X.diff.prod.t_2.pos </td> <td> -0.014  </td> <td> -0.066 </td> <td> 0.058  </td> <td> 0.143 </td> </tr>
+  <tr> <td align="right"> 12 </td> <td> X.diff.prod.t_3.pos </td> <td> 0.103  </td> <td> 0.529 </td> <td> 0.124  </td> <td> 0.343 </td> </tr>
+  <tr> <td align="right"> 13 </td> <td> X.diff.prod.t_4.pos </td> <td> 0.128  </td> <td> 0.866 </td> <td> 0.135  </td> <td> 0.494 </td> </tr>
+  <tr> <td align="right"> 14 </td> <td> X.diff.prod.t_1.neg </td> <td> 0.628** </td> <td> 2.577 </td> <td> 0.879* </td> <td> 1.945 </td> </tr>
+  <tr> <td align="right"> 15 </td> <td> X.diff.prod.t_2.neg </td> <td> 0.25  </td> <td> 0.951 </td> <td> 0.465  </td> <td> 0.952 </td> </tr>
+  <tr> <td align="right"> 16 </td> <td> X.diff.prod.t_3.neg </td> <td> -0.271  </td> <td> -1.105 </td> <td> -0.095  </td> <td> -0.209 </td> </tr>
+  <tr> <td align="right"> 17 </td> <td> X.diff.prod.t_4.neg </td> <td> -0.335* </td> <td> -1.679 </td> <td> -0.195  </td> <td> -0.527 </td> </tr>
+  <tr> <td align="right"> 18 </td> <td> X.ECT.t_1.pos </td> <td> -0.283  </td> <td> -0.743 </td> <td> -1.386* </td> <td> -1.965 </td> </tr>
+  <tr> <td align="right"> 19 </td> <td> X.ECT.t_1.neg </td> <td> -0.181  </td> <td> -0.92 </td> <td> -0.9** </td> <td> -2.463 </td> </tr>
+  <tr> <td align="right"> 20 </td> <td> R-squared </td> <td>    0.391 </td> <td> _ </td> <td>    0.253 </td> <td> _ </td> </tr>
+  <tr> <td align="right"> 21 </td> <td> AIC </td> <td> -400.641 </td> <td> _ </td> <td> -288.188 </td> <td> _ </td> </tr>
+  <tr> <td align="right"> 22 </td> <td> BIC </td> <td> -350.424 </td> <td> _ </td> <td> -237.971 </td> <td> _ </td> </tr>
+  <tr> <td align="right"> 23 </td> <td> LB(4) </td> <td>    0.991 </td> <td> _ </td> <td>    0.975 </td> <td> _ </td> </tr>
+  <tr> <td align="right"> 24 </td> <td> LB(8) </td> <td>    0.981 </td> <td> _ </td> <td>    0.973 </td> <td> _ </td> </tr>
+  <tr> <td align="right"> 25 </td> <td> cons (x) does not Granger cause... </td> <td> 1.254  </td> <td> [0.28] </td> <td> 1.025  </td> <td> [0.42] </td> </tr>
+  <tr> <td align="right"> 26 </td> <td> prod (y) does not Granger cause... </td> <td> 2.332** </td> <td> [0.03] </td> <td> 0.809  </td> <td> [0.6] </td> </tr>
+  <tr> <td align="right"> 27 </td> <td> X.diff.cons.t_2.pos = X.diff.cons.t_2.neg </td> <td> 1.323  </td> <td> [0.25] </td> <td> 0.807  </td> <td> [0.37] </td> </tr>
+  <tr> <td align="right"> 28 </td> <td> X.diff.prod.t_4.pos = X.diff.prod.t_4.neg </td> <td> 3.233* </td> <td> [0.08] </td> <td> 0.478  </td> <td> [0.49] </td> </tr>
+  <tr> <td align="right"> 29 </td> <td> Cumulative positive cons = Cumulative negative cons </td> <td> 0.033  </td> <td> [0.86] </td> <td> 0.038  </td> <td> [0.85] </td> </tr>
+  <tr> <td align="right"> 30 </td> <td> Cumulative positive prod = Cumulative negative prod </td> <td> 0.208  </td> <td> [0.65] </td> <td> 0.109  </td> <td> [0.74] </td> </tr>
+  <tr> <td align="right"> 31 </td> <td> X.ECT.t_1.pos=X.ECT.t_1.neg </td> <td> 0.083  </td> <td> [0.78] </td> <td> 0.552  </td> <td> [0.46] </td> </tr>
+   </table>

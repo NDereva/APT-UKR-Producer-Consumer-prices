@@ -1,10 +1,9 @@
 ---
-title: "Beef Modeling"
+title: "Wheat flour"
 author: "Mykola Dereva"
-date: "8/2/2021"
+date: "8/4/2021"
 output: html_document
 ---
-
 
 
 ```{r}
@@ -33,7 +32,7 @@ lag <- stats::lag
 
 
 ```{r}
-product <- "Beef"
+product <- "Wheat flour"
 
 cons <- x <- d %>% 
   filter(Type == "Consumer",
@@ -55,8 +54,8 @@ y.name <- "Producer"
 
 ```{r}
 par(mfrow=c(2,1))
-plot(x)
-plot(y)
+plot(x, main = x.name)
+plot(y, main = y.name)
 ```
 
 

@@ -1,7 +1,7 @@
 ---
-title: "Beef Modeling"
+title: "Poultry_modeling"
 author: "Mykola Dereva"
-date: "8/2/2021"
+date: "8/4/2021"
 output: html_document
 ---
 
@@ -23,6 +23,7 @@ library(apt)
 library(urca)
 library(dplyr)
 ```
+
 There is a conflict with the dplyr lag() so I have to change it to the default 
 function, so the apt package works properly 
 
@@ -33,7 +34,7 @@ lag <- stats::lag
 
 
 ```{r}
-product <- "Beef"
+product <- "Poultry"
 
 cons <- x <- d %>% 
   filter(Type == "Consumer",
@@ -55,9 +56,10 @@ y.name <- "Producer"
 
 ```{r}
 par(mfrow=c(2,1))
-plot(x)
-plot(y)
+plot(x, main = x.name)
+plot(y, main = y.name)
 ```
+
 
 
 
@@ -77,18 +79,21 @@ plot(ry)
 ```
 
 
+
 ```{r}
 eg <- ur.df(ry, type = c("none"), lags=1)
 summary(eg)
 ```
 
-we are primarily interested in the residuals from this equation, which would suggest that the variables are cointegrated if the residuals are stationary.
+TS are weakly cointegrated
 
 
 
 ```{r}
 plot(eg)
 ```
+
+
 
 Autocorrelation of residuals 
 
@@ -99,9 +104,13 @@ eg12 <- Box.test(eg@res, lag = 12, type="Ljung")
 
 ```
 
+
+
 ```{r}
 eg4; eg8; eg12
 ```
+
+
 
 
 # TAR + Cointegration
@@ -117,9 +126,11 @@ t3 <- ciTarThd(y=y, x=x, model="tar", lag=0)
 (th.tar <- t3$basic)
 ```
 
+
 ```{r}
 plot(t3)
 ```
+
 
 
 
@@ -139,6 +150,8 @@ th.tar
 ```
 
 
+
+
 ### MTAR treshold
 
 ```{r}
@@ -147,10 +160,10 @@ t4 <- ciTarThd(y=y, x=x, model="mtar", lag=0)
 ```
 
 
-
 ```{r}
 plot(t4)
 ```
+
 
 
 ```{r}
@@ -160,8 +173,6 @@ for (i in 1:12) {
 }
 th.mtar
 ```
-
-
 
 The following threshold values are specific to this data. They HAVE TO be
 revised for another data set. Otherwise, various errors will occur.
@@ -186,15 +197,21 @@ mx <- 12
 g1 <- ciTarLag(y=y, x=x, model="tar", maxlag=mx, thresh = 0)
 g1
 ```
+
+
 #### MTAR, threshlod 0
 ```{r}
 (g2 <-ciTarLag(y=y, x=x, model="mtar",maxlag=mx, thresh=0))
 ```
 
 
+
 ```{r}
 plot(g1)
 ```
+
+
+
 
 
 ```{r}
@@ -203,11 +220,11 @@ plot(g2)
 
 
 
-
 ```{r}
 (g3 <-ciTarLag(y=y, x=x, model="tar", maxlag=mx, thresh=t.tar))
 
 ```
+
 
 
 ```{r}
@@ -220,16 +237,17 @@ plot(g2)
 
 Choose Lag
 ```{r}
-vv <- 0
+vv <- 2
 ```
 
 ```{r}
-(f1 <- ciTarFit(y=y, x=x, model="tar", lag=vv, thresh=0 ))
+(f1 <- ciTarFit(y=y, x=x, model="tar", lag=0, thresh=0 ))
 ```
 
 
+
 ```{r}
-(f2 <- ciTarFit(y=y, x=x, model="tar", lag=vv, thresh=t.tar ))
+(f2 <- ciTarFit(y=y, x=x, model="tar", lag=0, thresh=t.tar ))
 ```
 
 
@@ -244,6 +262,8 @@ vv <- 0
 ```
 
 
+
+
 #### summary table
 
 ```{r}
@@ -255,7 +275,6 @@ diag <- r0[c(1:4, 6:7, 12:14, 8, 10, 9, 11), c(1,2,4,6,8)]
 rownames(diag) <- 1:nrow(diag)
 diag
 ```
-
 
 
 ```{r}
@@ -309,7 +328,6 @@ print(table, type = "html",
 
 
 
-
 # APT + ECM
 
 ```{r}
@@ -318,12 +336,11 @@ print(table, type = "html",
 
 
 
-
-
 ```{r}
 aem <- ecmAsyFit(y=prod, x=cons, lag=4, model="mtar", split=TRUE, thresh=t.mtar)
 aem
 ```
+
 
 
 ```{r}
@@ -344,6 +361,7 @@ coe
 ```
 
 
+
 ```{r}
 edia <- ecmDiag(aem, 3)
 ed <- edia[c(1,6,7,8,9), ]
@@ -351,6 +369,8 @@ ed2 <- cbind(ed[,1:2], "_", ed[,3], "_")
 colnames(ed2) <- colnames(coe)
 ed2
 ```
+
+
 
 
 ```{r}
@@ -375,10 +395,21 @@ table.2 <- data.frame(rbind(coe, ed2, tes3))
 table.2
 ```
 
+
 ```{r}
 table.2 <- xtable(table.2)
 
 print(table.2, type = "html",
       file = paste("tables/", product, "_ECM.doc", sep = ""))
 ```
+
+
+
+
+
+
+
+
+
+
 
