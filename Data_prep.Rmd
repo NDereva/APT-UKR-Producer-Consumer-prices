@@ -64,14 +64,17 @@ Lets plot the prices
 ```{r}
 d %>% 
   ggplot(aes(Date, Price, col = Type)) +
-  geom_line() +
+  geom_line(size = 0.75, aes(linetype = Type), color = "black") +
   facet_wrap(~ Product, ncol = 2, scales = "free_y") +
-  theme_minimal() +
+  ylab("Price (UAH/kg)") +
+  theme_bw() +
+ # theme(strip.background =element_rect(fill = "white")) +
+  
   theme(legend.position = "bottom")
 ```
 ```{r}
 
-ggsave("Prices.pdf", width = 20, height = 20, units = "cm", path = "plots/")
+ggsave("Prices.jpeg", width = 22, height = 25, units = "cm", path = "plots/")
 ```
 
 

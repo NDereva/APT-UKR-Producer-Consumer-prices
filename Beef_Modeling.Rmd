@@ -55,8 +55,8 @@ y.name <- "Producer"
 
 ```{r}
 par(mfrow=c(2,1))
-plot(x)
-plot(y)
+plot(x, main = x.name)
+plot(y, main = y.name)
 ```
 
 
