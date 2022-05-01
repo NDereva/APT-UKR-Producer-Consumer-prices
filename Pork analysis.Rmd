@@ -1,0 +1,698 @@
+---
+title: "APT Pork"
+author: "Mykola Dereva"
+date: "1/24/2022"
+output: html_document
+---
+
+
+
+```{r}
+rm(list = ls())
+```
+
+```{r}
+d <- readRDS("data/clean_data.RDS")
+```
+
+
+# Modeling 
+
+```{r message=FALSE}
+library(apt)
+library(urca)
+library(dplyr)
+
+library(xtable)
+```
+
+
+
+There is a conflict with the dplyr lag() so I have to change it to the default 
+function, so the apt package works properly 
+
+```{r}
+lag <- stats::lag
+```
+
+
+
+```{r}
+product <- "Wheat flour"
+
+prod <- x <- d %>% 
+  filter(Type == "Producer",
+         Product == product,
+         Date >= "2013-01-01") %>% 
+  select(Price) %>% 
+  log() %>% 
+  ts(start = c(2013,1), frequency = 12)
+  
+cons <- y <- d %>% 
+  filter(Type == "Consumer",
+         Product == product,
+         Date >= "2013-01-01") %>% 
+  select(Price) %>% 
+  log() %>% 
+  ts(start = c(2013, 1), frequency = 12)
+
+x.name <- "Producer"
+y.name <- "Consumer"
+
+table_path <- paste("tables/", product, "/", sep = "")
+```
+
+
+
+
+```{r}
+par(mfrow=c(2,1))
+plot(x, main = x.name)
+plot(y, main = y.name)
+```
+
+
+
+
+```{r}
+ca.jo(cbind(y,x), type = "eigen", ecdet = "none") %>% summary()
+```
+
+
+```{r}
+# Two step  cointegration test
+
+LR <- lm(y ~ x)
+# residuals
+res <- ts(residuals(LR), start=start(x), end=end(x), frequency = 12)
+
+ur.df(y = res, type = "none",  selectlags = "AIC") %>% summary()
+```
+
+
+
+
+
+```{r}
+# Test for structural brakes in TS
+br.x <- ur.za(x, model = "both", lag = 1)
+summary(br.x)
+```
+
+```{r}
+plot(br.x)
+```
+
+```{r}
+br.y <- ur.za(y, model = "both", lag = 1)
+summary(br.y)
+```
+```{r}
+plot(br.y)
+```
+
+
+
+
+
+```{r}
+## convenience function to make DF stationarity test tables quickly 
+
+get_df_test_result <- function(ts.name, ts.data, 
+                            test.type = c("none", "drift", "trace")) {
+  
+  t <- ur.df(y = ts.data, type = test.type,  selectlags = "AIC")
+  
+  table <- cbind(ts.name,
+                  t@model,
+                  t@teststat %>% t() %>% round(2),
+                  t@cval,
+                  t@lags) %>% as.data.frame() %>% 
+  tibble::rownames_to_column()
+  
+  colnames(table) <- c("Parameter", "Item", "Test Type", "Test Statistics",
+                     "1pct", "5pct", "10pct", "Lag")
+  
+  table <- table %>% select(Item, `Test Type`, Parameter, everything())
+  
+  return(table)
+  
+}
+```
+
+
+
+
+
+```{r}
+LR <- lm(y ~ x)
+# residuals
+res <- ts(residuals(LR), start=start(x), end=end(x), frequency = 12)
+```
+
+
+```{r}
+stationarity.table <- 
+  rbind(get_df_test_result("Consumer", cons, test.type = "none"),
+      get_df_test_result("Consumer", cons, test.type = "drift"),
+      get_df_test_result("Consumer", cons, test.type = "trend"),
+      get_df_test_result("Producer", prod, test.type = "none"),
+      get_df_test_result("Producer", prod, test.type = "drift"),
+      get_df_test_result("Producer", prod, test.type = "trend"),
+      get_df_test_result("Coinegration", res, test.type = "none"),
+      get_df_test_result("Coinegration", res, test.type = "drift"),
+      get_df_test_result("Coinegration", res, test.type = "trend")) 
+
+stationarity.table
+```
+
+```{r}
+stationarity.table %>% 
+    xtable() %>% 
+      print(type = "html",
+            file = paste(table_path,
+                         product, "_Stationarity_no_diff.doc", sep = ""))
+```
+
+
+
+Both variables not stationary together, or not coinegrated 
+So we need to make a first difference to stationarize them 
+
+## First diff
+
+```{r}
+prod.diff <- y.diff <- diff(cons, differences = 1)
+cons.diff <- x.diff <- diff(prod, differences = 1)
+```
+
+
+
+
+
+
+
+```{r}
+stationarity.table_diff <- 
+  rbind(get_df_test_result("Consumer", cons.diff, test.type = "none"),
+      get_df_test_result("Consumer", cons.diff, test.type = "drift"),
+      get_df_test_result("Consumer", cons.diff, test.type = "trend"),
+      get_df_test_result("Producer", prod.diff, test.type = "none"),
+      get_df_test_result("Producer", prod.diff, test.type = "drift"),
+      get_df_test_result("Producer", prod.diff, test.type = "trend"))
+
+stationarity.table_diff
+```
+
+
+
+```{r}
+stationarity.table_diff %>% 
+    xtable() %>% 
+      print(type = "html",
+            file = paste(table_path,
+                         product, "_Stationarity_first_diff.doc",
+                       sep = ""))
+```
+
+
+
+
+
+
+## structural brake
+
+Test stationarity with exogenous structural break
+```{r}
+t <- ur.za(y = cons, model = "both",  lag = 1)
+```
+
+```{r}
+summary(t)
+```
+
+
+```{r}
+
+t <- ur.za(y = cons, model = "both",  lag = 1)
+
+table <- cbind("Consumer",
+                t@model,
+                t@teststat %>% round(2),
+                t@cval %>% t(),
+                t@lag) %>% as.data.frame() 
+
+colnames(table) <- c("Item", "Test Type", "Test Statistics",
+                   "1pct", "5pct", "10pct", "Lag")
+
+table <- table %>% select(Item, `Test Type`, everything())
+
+table
+```
+
+
+
+```{r}
+## convenience function to make Zivot and Andrews stationarity test tables quickly 
+
+get_za_test_result <- function(ts.name, ts.data, 
+                            model = c("intercept", "trend", "both"),
+                            lag = 1) {
+  
+  t <- ur.za(y = ts.data, model = model,  lag = lag)
+
+  table <- cbind(ts.name,
+                  t@model,
+                  t@teststat %>% round(2),
+                  t@cval %>% t(),
+                  t@lag) %>% as.data.frame() 
+  
+  colnames(table) <- c("Item", "Test Type", "Test Statistics",
+                     "1pct", "5pct", "10pct", "Lag")
+  
+  table <- table %>% select(Item, `Test Type`, everything())
+  
+  return(table)
+}
+```
+
+```{r}
+get_za_test_result(ts.name = "Consumer", ts.data = cons, model = "both")
+```
+
+```{r}
+stationarity.table_za <- 
+  rbind(
+        get_za_test_result("Consumer", cons, model = "intercept"),
+        get_za_test_result("Consumer", cons, model = "trend"),
+        get_za_test_result("Consumer", cons, model = "both"),
+        get_za_test_result("Producer", prod, model = "intercept"),
+        get_za_test_result("Producer", prod, model = "trend"),
+        get_za_test_result("Producer", prod, model = "both")
+        )
+
+stationarity.table_za
+```
+
+
+```{r}
+stationarity.table_za %>% 
+    xtable() %>% 
+      print(type = "html",
+            file = paste(table_path,
+                         product, "_Stationarity_ZA.doc",
+                       sep = ""))
+```
+
+
+
+
+
+## Perron Unit Root test
+
+```{r}
+aTSA::pp.test(cons, lag.short = TRUE, type = "Z_rho")
+```
+
+```{r}
+aTSA::pp.test(cons.diff, lag.short = TRUE, type = "Z_rho")
+```
+
+
+```{r}
+aTSA::pp.test(prod, lag.short = TRUE, type = "Z_rho")
+```
+
+```{r}
+aTSA::pp.test(prod.diff, lag.short = TRUE, type = "Z_rho")
+```
+
+```{r}
+
+aTSA::pp.test(res, lag.short = F, type = "Z_rho")
+```
+
+
+# TAR + Cointegration
+
+
+### TAR
+
+```{r}
+t3 <- ciTarThd(y=y, x=x, model="tar", lag=0)
+```
+
+```{r}
+(th.tar <- t3$basic)
+```
+
+
+```{r}
+plot(t3)
+```
+
+
+
+
+Choose threshold
+
+```{r}
+for (i in 1:12) { # 20 seconds
+  t3a <- ciTarThd(y=y, x=x, model="tar", lag=i)
+  th.tar[i+2] <- t3a$basic[,2]
+}
+```
+
+
+
+```{r}
+th.tar
+```
+
+
+
+
+### MTAR treshold
+
+```{r}
+t4 <- ciTarThd(y=y, x=x, model="mtar", lag=0)
+(th.mtar <- t4$basic)
+```
+
+
+```{r}
+plot(t4)
+```
+
+
+
+```{r}
+for (i in 1:12) {
+  t4a <- ciTarThd(y=y, x=x, model="mtar", lag=i)
+  th.mtar[i+2] <- t4a$basic[,2]
+}
+th.mtar
+```
+
+The following threshold values are specific to this data. They HAVE TO be
+revised for another data set. Otherwise, various errors will occur.
+
+```{r}
+(t.tar <- th.tar$V3[2])    #Best threshold for tar
+(t.mtar <- th.mtar$V3[2])
+```
+
+
+## Lag selection 
+
+```{r}
+# max lag 
+mx <- 12
+```
+
+
+
+### tar, thresold 0
+```{r}
+g1 <- ciTarLag(y=y, x=x, model="tar", maxlag=mx, thresh = 0)
+g1
+```
+
+
+#### MTAR, threshlod 0
+```{r}
+(g2 <-ciTarLag(y=y, x=x, model="mtar",maxlag=mx, thresh=0))
+```
+
+
+
+```{r}
+plot(g1)
+```
+
+
+
+
+
+```{r}
+plot(g2)
+```
+
+
+
+```{r}
+(g3 <-ciTarLag(y=y, x=x, model="tar", maxlag=mx, thresh=t.tar))
+
+```
+
+
+
+```{r}
+(g4 <-ciTarLag(y=y, x=x, model="mtar",maxlag=mx, thresh=t.mtar))
+
+```
+
+
+# Table 3 Results of EG and threshold cointegration tests
+
+Choose Lag
+```{r}
+vv <- 0
+```
+
+
+
+```{r}
+(f1 <- ciTarFit(y=y, x=x, model="tar", lag=vv, thresh=0))
+```
+
+
+
+```{r}
+(f2 <- ciTarFit(y=y, x=x, model="tar", lag=vv, thresh=t.tar ))
+```
+
+
+
+```{r}
+(f3 <- ciTarFit(y=y, x=x, model="mtar", lag=vv, thresh=0 ))
+```
+
+
+```{r}
+(f4 <- ciTarFit(y=y, x=x, model="mtar", lag=vv, thresh=t.mtar))
+```
+
+
+
+
+#### summary table
+
+```{r}
+r0 <- cbind(summary(f1)$dia, summary(f2)$dia,
+            summary(f3)$dia, summary(f4)$dia)
+
+diag <- r0[c(1:4, 6:7, 12:14, 8, 10, 9, 11), c(1,2,4,6,8)]
+
+rownames(diag) <- 1:nrow(diag)
+diag
+```
+
+
+```{r}
+e1 <- summary(f1)$out
+e2 <- summary(f2)$out
+e3 <- summary(f3)$out
+e4 <- summary(f4)$out
+
+```
+
+
+```{r}
+ee <- list(e1, e2, e3, e4)
+vect <- NULL
+
+
+for (i in 1:4) {
+  ef <- data.frame(ee[i])
+  vect2 <- c(paste(ef[3, "estimate"], ef[3, "sign"], sep=""),
+  paste("(", ef[3, "t.value"], ")", sep=""),
+  paste(ef[4, "estimate"], ef[4, "sign"], sep=""),
+  paste("(", ef[4, "t.value"], ")", sep=""))
+  vect <- cbind(vect, vect2)
+}
+
+```
+
+
+```{r}
+item <- c("pos.coeff","pos.t.value", "neg.coeff","neg.t.value")
+ve <- data.frame(cbind(item, vect))
+colnames(ve) <- colnames(diag)
+( res.CI <- rbind(diag, ve)[c(1:2, 14:17, 3:13), ] )
+rownames(res.CI) <- 1:nrow(res.CI)
+
+res.CI
+```
+
+
+### save summary table
+```{r}
+table <- xtable(res.CI)
+print(table, type = "html",
+      file = paste(table_path,
+                   product, ".doc", sep = ""))
+```
+
+
+
+
+# APT + ECM
+
+
+
+```{r}
+(sem <- ecmSymFit(y=prod, x=cons, lag=1))  
+```
+```{r}
+summary(sem)
+```
+
+
+```{r}
+
+ccc <- summary(sem)
+
+tr <- nrow(ccc)
+ce <- tr / 2
+
+coe <- cbind(as.character(ccc[1:ce, 2]),
+    paste(ccc[1:ce, "estimate"], ccc$signif[1:ce], sep=""), ccc[1:ce, "t.value"],
+    paste(ccc[(ce+1):tr,"estimate"], ccc$signif[(ce+1):tr],sep=""), ccc[(ce+1):tr,"t.value"])
+
+colnames(coe) <- c("item",
+                   paste(x.name, ".est", sep = ""),
+                   paste(x.name, ".t", sep = ""),
+                   paste(y.name, ".est", sep = ""),
+                   paste(y.name, ".t", sep = "")
+                   )
+
+coe %>% data.frame()
+```
+
+
+```{r}
+edia <- ecmDiag(sem, 3)
+ed <- edia[c(1,6,7,8,9, 10), ]
+ed2 <- cbind(ed[,1:2], "_", ed[,3], "_")
+colnames(ed2) <- colnames(coe)
+ed2
+```
+
+
+
+```{r}
+table.1.1 <- data.frame(rbind(coe, ed2))
+
+table.1.1
+```
+
+
+```{r}
+table.1.1 %>%  
+  xtable() %>% 
+  print(type = "html",
+      file = paste(table_path, product, "_Symetric_ECM.doc", sep = ""))
+```
+
+
+
+# Fitting Assymetric ECM
+
+
+```{r}
+aem <- ecmAsyFit(y=prod, x=cons, lag=1, model="tar",
+                 split=TRUE, thresh=t.tar)
+aem
+```
+
+```{r}
+summary(aem)
+```
+
+
+
+
+
+
+
+```{r}
+ccc <- summary(aem)
+tr <- nrow(ccc)
+ce <- tr / 2
+
+
+
+coe <- cbind(as.character(ccc[1:ce, 2]),
+    paste(ccc[1:ce, "estimate"], ccc$signif[1:ce], sep=""),
+    ccc[1:ce, "p.value"],
+    paste(ccc[(ce+1):tr,"estimate"], ccc$signif[(ce+1):tr],sep=""),
+    ccc[(ce+1):tr,"p.value"])
+
+colnames(coe) <- c("item",
+                   paste(x.name, ".est", sep = ""),
+                   paste(x.name, ".pval", sep = ""),
+                   paste(y.name, ".est", sep = ""),
+                   paste(y.name, ".pval", sep = "")
+                   )
+
+coe
+```
+
+
+```{r}
+edia <- ecmDiag(aem, 3)
+ed <- edia[c(1,6,7,8,9), ]
+ed2 <- cbind(ed[,1:2], "_", ed[,3], "_")
+colnames(ed2) <- colnames(coe)
+ed2
+```
+
+
+
+
+```{r}
+tes <- ecmAsyTest(aem)$out
+tes2 <- tes[c(2:7,1), -1]   ### change depending on the lag number
+
+tes3 <- cbind(as.character(tes2[,1]),
+              paste(tes2[,2], tes2[,6], sep=''),
+              paste("[", round(tes2[,4],2), "]", sep=''),
+              paste(tes2[,3], tes2[,7], sep=''),
+              paste("[", round(tes2[,5],2), "]", sep=''))
+
+colnames(tes3) <- colnames(coe)
+
+tes3
+```
+
+```{r}
+coe <- data.frame(apply(coe, 2, as.character), stringsAsFactors=FALSE)
+ed2 <- data.frame(apply(ed2, 2, as.character), stringsAsFactors=FALSE)
+tes3 <- data.frame(apply(tes3,2, as.character), stringsAsFactors=FALSE)
+```
+
+```{r}
+table.2 <- data.frame(rbind(coe, ed2, tes3))
+
+table.2
+```
+
+
+```{r}
+table.2 %>% 
+  xtable() %>% 
+  print(type = "html",
+      file = paste(table_path, product, "_Asymetric_ECM.doc", sep = ""))
+```
+

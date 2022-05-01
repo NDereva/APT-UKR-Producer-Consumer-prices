@@ -313,7 +313,7 @@ print(table, type = "html",
 # APT + ECM
 
 ```{r}
-(sem <- ecmSymFit(y=prod, x=cons, lag=4))  # why lag 4?
+(sem <- ecmSymFit(y=prod, x=cons, lag=4))
 ```
 
 
